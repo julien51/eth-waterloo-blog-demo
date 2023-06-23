@@ -37,7 +37,7 @@ export default function Post({ post, morePosts, preview }: Props) {
 
   // Now let's check that the user has a memvership!
   const {data: hasAccess, error, isLoading} = useContractRead({
-    address: lockAddress, // Replace with the lock address!
+    address: lockAddress,
     abi: PublicLockV13.abi,
     chainId: 5,
     functionName: 'balanceOf',
@@ -79,10 +79,11 @@ export default function Post({ post, morePosts, preview }: Props) {
                   <button onClick={() => {
                     paywall.loadCheckoutModal({
                       locks: {
-                        lockAddress: {
+                        [lockAddress]: {
                           network: 5
-                        }
-                      }
+                        },
+                      },
+                      pessimisitic: true
                     })
                   }} className="border-2 border-black rounded-md p-2 hover:bg-black hover:text-white duration-200 transition-colors">Purchase membership</button>
                 </div>
