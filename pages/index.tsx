@@ -23,23 +23,7 @@ export const paywall = new Paywall(networks);
 export default function Index({ allPosts }: Props) {
   const heroPost = allPosts[0]
   const morePosts = allPosts.slice(1)
-  const { address, isConnected } = useAccount();
 
-  const provider = useMemo(() => {
-    return paywall.getProvider('http://localhost:3000/'); 
-  }, []);
-
-  const { connect } = useConnect({
-    connector: new InjectedConnector({
-      options: {
-        name: "Unlock Paywall Provider",
-        getProvider: () => {
-          // Return the provider we created earlier
-          return provider;
-        },
-      },
-    }),
-  });
 
 
   return (
@@ -49,7 +33,7 @@ export default function Index({ allPosts }: Props) {
           <title>{`Next.js Blog Example with ${CMS_NAME}`}</title>
         </Head>
         <Container>
-          <Intro connect={connect} />
+          <Intro />
           {heroPost && (
             <HeroPost
               title={heroPost.title}

@@ -15,6 +15,8 @@ import { useAccount } from 'wagmi'
 import { useContractRead } from 'wagmi'
 import { PublicLockV13 } from '@unlock-protocol/contracts'
 import { paywall } from '..'
+import Intro from '../../components/intro'
+import Connect from '../../components/Connect'
 
 const lockAddress = '0x8C1C77B37549De45834739f8cf8b9181D690e2bf'
 
@@ -57,6 +59,8 @@ export default function Post({ post, morePosts, preview }: Props) {
         ) : (
           <>
             <article className="mb-32">
+            <Connect />
+
               <Head>
                 <title>{title}</title>
                 <meta property="og:image" content={post.ogImage.url} />
