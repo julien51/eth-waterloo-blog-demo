@@ -1,63 +1,243 @@
-# A statically generated blog example using Next.js, Markdown, and TypeScript
+# An example of token gated application with an Unlock Membership
 
-This is the existing [blog-starter](https://github.com/vercel/next.js/tree/canary/examples/blog-starter) plus TypeScript.
+This application is an example of how you can very easily monetize a web application with an Unlock based membership!
 
-This example showcases Next.js's [Static Generation](https://nextjs.org/docs/basic-features/pages) feature using Markdown files as the data source.
+For this, we are starting with the [blog-starter](https://github.com/vercel/next.js/tree/canary/examples/blog-starter) Next.JS application.
+From there, here are the steps to reproduce this in your own web application!
 
-The blog posts are stored in `/_posts` as Markdown files with front matter support. Adding a new Markdown file in there will create a new blog post.
+## 1. Installing dependencies
 
-To create the blog posts we use [`remark`](https://github.com/remarkjs/remark) and [`remark-html`](https://github.com/remarkjs/remark-html) to convert the Markdown files into an HTML string, and then send it down as a prop to the page. The metadata of every post is handled by [`gray-matter`](https://github.com/jonschlinkert/gray-matter) and also sent in props to the page.
+We add dependencies from Unlock: the contracts' ABI, the paywall module and the networks module. These are all optional but let us build applications faster. You should eventually replace them in your production application!
 
-## Demo
-
-[https://next-blog-starter.vercel.app/](https://next-blog-starter.vercel.app/)
-
-## Deploy your own
-
-Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=next-example) or preview live with [StackBlitz](https://stackblitz.com/github/vercel/next.js/tree/canary/examples/blog-starter)
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/vercel/next.js/tree/canary/examples/blog-starter&project-name=blog-starter&repository-name=blog-starter)
-
-### Related examples
-
-- [WordPress](/examples/cms-wordpress)
-- [DatoCMS](/examples/cms-datocms)
-- [Sanity](/examples/cms-sanity)
-- [TakeShape](/examples/cms-takeshape)
-- [Prismic](/examples/cms-prismic)
-- [Contentful](/examples/cms-contentful)
-- [Strapi](/examples/cms-strapi)
-- [Agility CMS](/examples/cms-agilitycms)
-- [Cosmic](/examples/cms-cosmic)
-- [ButterCMS](/examples/cms-buttercms)
-- [Storyblok](/examples/cms-storyblok)
-- [GraphCMS](/examples/cms-graphcms)
-- [Kontent](/examples/cms-kontent)
-- [Umbraco Heartcore](/examples/cms-umbraco-heartcore)
-- [Builder.io](/examples/cms-builder-io)
-- [TinaCMS](/examples/cms-tina/)
-- [Enterspeed](/examples/cms-enterspeed)
-
-## How to use
-
-Execute [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) with [npm](https://docs.npmjs.com/cli/init), [Yarn](https://yarnpkg.com/lang/en/docs/cli/create/), or [pnpm](https://pnpm.io) to bootstrap the example:
+We also use `ethers`, `wagmi` and `viem` which are popular JS front-end tools to handle wallets and smart contracts.
 
 ```bash
-npx create-next-app --example blog-starter blog-starter-app
+yarn add @unlock-protocol/contracts @unlock-protocol/paywall @unlock-protocol/networks ethers@5.7.x wagmi viem
 ```
 
-```bash
-yarn create next-app --example blog-starter blog-starter-app
+## 2. Configuration
+
+We now instantiate a Paywall object, as well as configure the wagmi client and provider.
+
+We update the `_app.tsx` file the following:
+
+```javascript
+import { AppProps } from 'next/app'
+import { WagmiConfig, createConfig, mainnet } from 'wagmi'
+import { createPublicClient, http } from 'viem'
+import '../styles/index.css'
+import { goerli } from 'viem/chains'
+import { Paywall } from '@unlock-protocol/paywall'
+import { networks } from '@unlock-protocol/networks'
+
+export const paywall = new Paywall(networks);
+
+const config = createConfig({
+  autoConnect: true,
+  publicClient: createPublicClient({
+    chain: goerli,
+    transport: http(),
+  }),
+})
+
+export default function MyApp({ Component, pageProps }: AppProps) {
+  return <WagmiConfig config={config}>
+    <Component {...pageProps} />
+  </WagmiConfig>
+}
 ```
 
-```bash
-pnpm create next-app --example blog-starter blog-starter-app
+### 3. Adding a "connect your wallet" button
+
+We add a new `Connect.tsx` component.
+
+```javascript
+import { useMemo } from 'react';
+import { useAccount, useConnect } from 'wagmi';
+import { InjectedConnector } from 'wagmi/connectors/injected'
+
+const Connect = () => {
+  const { address, isConnected } = useAccount();
+  
+  // Retrieve the wallet provider from the paywall library
+  const provider = useMemo(() => {
+    return paywall.getProvider("https://app.unlock-protocol.com"); 
+  }, []);
+
+  const { connect } = useConnect({
+    connector: new InjectedConnector({
+      options: {
+        name: "Unlock Paywall Provider",
+        getProvider: () => {
+          // Return the provider we created earlier
+          return provider;
+        },
+      },
+    }),
+  });
+
+  return (
+    <>
+      {!isConnected && <button onClick={() => {
+        connect()
+      }} className="border-2 border-black rounded-md p-2 hover:bg-black hover:text-white duration-200 transition-colors">Connect</button>  
+      }
+      {isConnected && <p>Welcome back {address.slice(0,8)}&hellip;</p>}
+    </>
+  )
+}
+
+export default Connect
 ```
 
-Your blog should be up and running on [http://localhost:3000](http://localhost:3000)! If it doesn't work, post on [GitHub discussions](https://github.com/vercel/next.js/discussions).
+### 4. Deploying a membership contract!
 
-Deploy it to the cloud with [Vercel](https://vercel.com/new?utm_source=github&utm_medium=readme&utm_campaign=next-example) ([Documentation](https://nextjs.org/docs/deployment)).
+For this, we use the [Unlock Dashboard](https://app.unlock-protocol.com/), but this could also be done in code directly.
 
-# Notes
+We keep track of the deployed contract address!
 
-`blog-starter` uses [Tailwind CSS](https://tailwindcss.com) [(v3.0)](https://tailwindcss.com/blog/tailwindcss-v3).
+### 5. Adding post gating!
+
+We are updating the `[slug].tsx` component to add the token gating logic! 
+
+```js
+import { useRouter } from 'next/router'
+import ErrorPage from 'next/error'
+import Container from '../../components/container'
+import PostBody from '../../components/post-body'
+import Header from '../../components/header'
+import PostHeader from '../../components/post-header'
+import Layout from '../../components/layout'
+import { getPostBySlug, getAllPosts } from '../../lib/api'
+import PostTitle from '../../components/post-title'
+import Head from 'next/head'
+import { CMS_NAME } from '../../lib/constants'
+import markdownToHtml from '../../lib/markdownToHtml'
+import type PostType from '../../interfaces/post'
+import { useAccount } from 'wagmi'
+import { useContractRead } from 'wagmi'
+import { PublicLockV13 } from '@unlock-protocol/contracts'
+import Connect from '../../components/Connect'
+import { paywall } from '../_app'
+
+const lockAddress = '0x8C1C77B37549De45834739f8cf8b9181D690e2bf'
+
+type Props = {
+  post: PostType
+  morePosts: PostType[]
+  preview?: boolean
+}
+
+export default function Post({ post, morePosts, preview }: Props) {
+  const router = useRouter()
+  const title = `${post.title} | Next.js Blog Example with ${CMS_NAME}`
+  if (!router.isFallback && !post?.slug) {
+    return <ErrorPage statusCode={404} />
+  }
+
+  const { address, isConnected } = useAccount();
+
+  // Now let's check that the user has a memvership!
+  const {data: hasAccess, error, isLoading} = useContractRead({
+    address: lockAddress,
+    abi: PublicLockV13.abi,
+    chainId: 5,
+    functionName: 'balanceOf',
+    enabled: !!isConnected,
+    watch: true,
+    args: address ? [address] : [],
+    select: (data: number) => {
+      return data > 0
+    },
+  })
+
+
+  return (
+    <Layout preview={preview}>
+      <Container>
+        <Header />
+        {router.isFallback || isLoading ? (
+          <PostTitle>Loading…</PostTitle>
+        ) : (
+          <>
+            <article className="mb-32">
+            <Connect />
+
+              <Head>
+                <title>{title}</title>
+                <meta property="og:image" content={post.ogImage.url} />
+              </Head>
+              <PostHeader
+                title={post.title}
+                coverImage={post.coverImage}
+                date={post.date}
+                author={post.author}
+              />
+              {hasAccess &&
+              <PostBody content={post.content} />}
+              {!hasAccess &&
+                <div className="max-w-2xl mx-auto">
+                  <p>You don't have access!</p>
+                  <button onClick={() => {
+                    paywall.loadCheckoutModal({
+                      locks: {
+                        [lockAddress]: {
+                          network: 5
+                        },
+                      },
+                      pessimistic: true
+                    })
+                  }} className="border-2 border-black rounded-md p-2 hover:bg-black hover:text-white duration-200 transition-colors">Purchase membership</button>
+                </div>
+              }
+            </article>
+          </>
+        )}
+      </Container>
+    </Layout>
+  )
+}
+
+type Params = {
+  params: {
+    slug: string
+  }
+}
+
+export async function getStaticProps({ params }: Params) {
+  const post = getPostBySlug(params.slug, [
+    'title',
+    'date',
+    'slug',
+    'author',
+    'content',
+    'ogImage',
+    'coverImage',
+  ])
+  const content = await markdownToHtml(post.content || '')
+
+  return {
+    props: {
+      post: {
+        ...post,
+        content,
+      },
+    },
+  }
+}
+
+export async function getStaticPaths() {
+  const posts = getAllPosts(['slug'])
+
+  return {
+    paths: posts.map((post) => {
+      return {
+        params: {
+          slug: post.slug,
+        },
+      }
+    }),
+    fallback: false,
+  }
+}
+```

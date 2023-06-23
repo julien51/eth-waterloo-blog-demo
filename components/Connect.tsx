@@ -7,7 +7,7 @@ import { paywall } from '../pages/_app';
 const Connect = () => {
   const { address, isConnected } = useAccount();
   const provider = useMemo(() => {
-    return paywall.getProvider(); 
+    return paywall.getProvider("https://app.unlock-protocol.com"); 
   }, []);
 
   const { connect } = useConnect({

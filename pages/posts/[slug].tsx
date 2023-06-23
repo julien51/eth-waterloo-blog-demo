@@ -41,6 +41,7 @@ export default function Post({ post, morePosts, preview }: Props) {
     chainId: 5,
     functionName: 'balanceOf',
     enabled: !!isConnected,
+    watch: true,
     args: address ? [address] : [],
     select: (data: number) => {
       return data > 0
@@ -82,7 +83,7 @@ export default function Post({ post, morePosts, preview }: Props) {
                           network: 5
                         },
                       },
-                      pessimisitic: true
+                      pessimistic: true
                     })
                   }} className="border-2 border-black rounded-md p-2 hover:bg-black hover:text-white duration-200 transition-colors">Purchase membership</button>
                 </div>
