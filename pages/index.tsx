@@ -18,14 +18,15 @@ type Props = {
   allPosts: Post[]
 }
 
+export const paywall = new Paywall(networks);
+
 export default function Index({ allPosts }: Props) {
   const heroPost = allPosts[0]
   const morePosts = allPosts.slice(1)
   const { address, isConnected } = useAccount();
 
   const provider = useMemo(() => {
-    const paywall = new Paywall(networks);
-    return paywall.getProvider('https://staging-app.unlock-protocol.com/'); 
+    return paywall.getProvider('http://localhost:3000/'); 
   }, []);
 
   const { connect } = useConnect({

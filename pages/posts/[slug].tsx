@@ -14,8 +14,9 @@ import type PostType from '../../interfaces/post'
 import { useAccount } from 'wagmi'
 import { useContractRead } from 'wagmi'
 import { PublicLockV13 } from '@unlock-protocol/contracts'
+import { paywall } from '..'
 
-
+const lockAddress = '0x8C1C77B37549De45834739f8cf8b9181D690e2bf'
 
 type Props = {
   post: PostType
@@ -34,7 +35,7 @@ export default function Post({ post, morePosts, preview }: Props) {
 
   // Now let's check that the user has a memvership!
   const {data: hasAccess, error, isLoading} = useContractRead({
-    address: '0x8C1C77B37549De45834739f8cf8b9181D690e2bf', // Replace with the lock address!
+    address: lockAddress, // Replace with the lock address!
     abi: PublicLockV13.abi,
     chainId: 5,
     functionName: 'balanceOf',
@@ -69,9 +70,19 @@ export default function Post({ post, morePosts, preview }: Props) {
               {hasAccess &&
               <PostBody content={post.content} />}
               {!hasAccess &&
-                  <div className="max-w-2xl mx-auto">
-              <p>You don't have access!</p>
-              </div>}
+                <div className="max-w-2xl mx-auto">
+                  <p>You don't have access!</p>
+                  <button onClick={() => {
+                    paywall.loadCheckoutModal({
+                      locks: {
+                        lockAddress: {
+                          network: 5
+                        }
+                      }
+                    })
+                  }} className="border-2 border-black rounded-md p-2 hover:bg-black hover:text-white duration-200 transition-colors">Purchase membership</button>
+                </div>
+              }
             </article>
           </>
         )}
