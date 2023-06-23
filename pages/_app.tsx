@@ -3,13 +3,14 @@ import { WagmiConfig, createConfig, mainnet } from 'wagmi'
 import { createPublicClient, http } from 'viem'
 
 import '../styles/index.css'
+import { goerli } from 'viem/chains'
 
 const network = 5
 
 const config = createConfig({
   autoConnect: true,
   publicClient: createPublicClient({
-    chain: mainnet,
+    chain: goerli,
     transport: http(),
   }),
 })
