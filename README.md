@@ -151,6 +151,19 @@ export default function Post({ post, morePosts, preview }: Props) {
     },
   })
 
+  // Calls the paywall to checkout!
+  const onPurchase = async () => {
+    paywall.loadCheckoutModal({
+      locks: {
+        [lockAddress]: {
+          network: 5
+        },
+      },
+      pessimistic: true,
+      skipReceipient: true
+    })
+  }
+
 
   return (
     <Layout preview={preview}>
@@ -161,8 +174,6 @@ export default function Post({ post, morePosts, preview }: Props) {
         ) : (
           <>
             <article className="mb-32">
-            <Connect />
-
               <Head>
                 <title>{title}</title>
                 <meta property="og:image" content={post.ogImage.url} />
@@ -173,23 +184,23 @@ export default function Post({ post, morePosts, preview }: Props) {
                 date={post.date}
                 author={post.author}
               />
-              {hasAccess &&
-              <PostBody content={post.content} />}
-              {!hasAccess &&
-                <div className="max-w-2xl mx-auto">
-                  <p>You don't have access!</p>
-                  <button onClick={() => {
-                    paywall.loadCheckoutModal({
-                      locks: {
-                        [lockAddress]: {
-                          network: 5
-                        },
-                      },
-                      pessimistic: true
-                    })
-                  }} className="border-2 border-black rounded-md p-2 hover:bg-black hover:text-white duration-200 transition-colors">Purchase membership</button>
-                </div>
-              }
+                {!isConnected && 
+                  <div className="max-w-2xl mx-auto">
+                    <p>You are not connected...</p>
+                    <Connect />
+                  </div>
+                }
+
+                {isConnected && !hasAccess && 
+                  <div className="max-w-2xl mx-auto">
+                    <p>You don't have access! Please purchase a membership!</p>
+                    <button onClick={onPurchase} className="border-2 border-black rounded-md p-2 hover:bg-black hover:text-white duration-200 transition-colors">Purchase membership</button>
+                  </div>
+                }
+                
+                {isConnected && hasAccess &&
+                    <PostBody content={post.content} />
+                }
             </article>
           </>
         )}
