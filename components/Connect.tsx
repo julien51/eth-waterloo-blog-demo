@@ -7,7 +7,7 @@ import { paywall } from '../pages/_app';
 const Connect = () => {
   const { address, isConnected } = useAccount();
   const provider = useMemo(() => {
-    return paywall.getProvider('http://localhost:3000/'); 
+    return paywall.getProvider(); 
   }, []);
 
   const { connect } = useConnect({
