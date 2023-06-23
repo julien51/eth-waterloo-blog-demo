@@ -10,7 +10,7 @@ import Post from '../interfaces/post'
 import { useMemo } from 'react'
 import { Paywall } from '@unlock-protocol/paywall'
 import { networks } from '@unlock-protocol/networks'
-import { useConnect } from 'wagmi'
+import { useAccount, useConnect } from 'wagmi'
 import { InjectedConnector } from "wagmi/connectors/injected";
 
 
