@@ -1,11 +1,12 @@
 import { AppProps } from 'next/app'
 import { WagmiConfig, createConfig, mainnet } from 'wagmi'
 import { createPublicClient, http } from 'viem'
-
 import '../styles/index.css'
 import { goerli } from 'viem/chains'
+import { Paywall } from '@unlock-protocol/paywall'
+import { networks } from '@unlock-protocol/networks'
 
-const network = 5
+export const paywall = new Paywall(networks);
 
 const config = createConfig({
   autoConnect: true,

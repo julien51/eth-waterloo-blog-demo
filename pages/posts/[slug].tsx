@@ -14,9 +14,8 @@ import type PostType from '../../interfaces/post'
 import { useAccount } from 'wagmi'
 import { useContractRead } from 'wagmi'
 import { PublicLockV13 } from '@unlock-protocol/contracts'
-import { paywall } from '..'
-import Intro from '../../components/intro'
 import Connect from '../../components/Connect'
+import { paywall } from '../_app'
 
 const lockAddress = '0x8C1C77B37549De45834739f8cf8b9181D690e2bf'
 

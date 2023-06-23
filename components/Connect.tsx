@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useAccount, useConnect } from 'wagmi';
-import { paywall } from '../pages';
 import { InjectedConnector } from 'wagmi/connectors/injected'
+import { paywall } from '../pages/_app';
 
 
 const Connect = () => {

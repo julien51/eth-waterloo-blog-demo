@@ -7,24 +7,16 @@ import { getAllPosts } from '../lib/api'
 import Head from 'next/head'
 import { CMS_NAME } from '../lib/constants'
 import Post from '../interfaces/post'
-import { useMemo } from 'react'
-import { Paywall } from '@unlock-protocol/paywall'
-import { networks } from '@unlock-protocol/networks'
-import { useAccount, useConnect } from 'wagmi'
-import { InjectedConnector } from "wagmi/connectors/injected";
 
 
 type Props = {
   allPosts: Post[]
 }
 
-export const paywall = new Paywall(networks);
 
 export default function Index({ allPosts }: Props) {
   const heroPost = allPosts[0]
   const morePosts = allPosts.slice(1)
-
-
 
   return (
     <>
