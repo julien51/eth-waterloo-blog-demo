@@ -7,6 +7,12 @@ import { getAllPosts } from '../lib/api'
 import Head from 'next/head'
 import { CMS_NAME } from '../lib/constants'
 import Post from '../interfaces/post'
+import { useMemo } from 'react'
+import { Paywall } from '@unlock-protocol/paywall'
+import { networks } from '@unlock-protocol/networks'
+import { useConnect } from 'wagmi'
+import { InjectedConnector } from "wagmi/connectors/injected";
+
 
 type Props = {
   allPosts: Post[]
@@ -15,6 +21,25 @@ type Props = {
 export default function Index({ allPosts }: Props) {
   const heroPost = allPosts[0]
   const morePosts = allPosts.slice(1)
+
+  const provider = useMemo(() => {
+    const paywall = new Paywall(networks);
+    return paywall.getProvider('https://staging-app.unlock-protocol.com/'); 
+  }, []);
+
+  const { connect } = useConnect({
+    connector: new InjectedConnector({
+      options: {
+        name: "Unlock Paywall Provider",
+        getProvider: () => {
+          // Return the provider we created earlier
+          return provider;
+        },
+      },
+    }),
+  });
+
+
   return (
     <>
       <Layout>
@@ -22,7 +47,7 @@ export default function Index({ allPosts }: Props) {
           <title>{`Next.js Blog Example with ${CMS_NAME}`}</title>
         </Head>
         <Container>
-          <Intro />
+          <Intro connect={connect} />
           {heroPost && (
             <HeroPost
               title={heroPost.title}
